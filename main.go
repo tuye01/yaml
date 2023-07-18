@@ -6,36 +6,19 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"fmt"
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
-	"log"
+	"os"
 )
 
+// main.exe mypassword
 func main() {
-	var c conf
-	c.getConf()
-	pwdwithsalt := AesEncrypt(c.Password, c.EncryptionValueStr)
+	if len(os.Args) < 2 {
+		fmt.Println("请提供密码作为命令行参数")
+		return
+	}
+	password := os.Args[1]
+
+	pwdwithsalt := AesEncrypt(password, "123456789123456789123456")
 	fmt.Printf("加密后为：%s", pwdwithsalt)
-}
-
-type conf struct {
-	Password           string `yaml:"password"`
-	EncryptionValueStr string `yaml:"encryptionValueStr"`
-}
-
-func (c *conf) getConf() *conf {
-
-	fmt.Printf("开始读取配置~\n")
-	yamlFile, err := ioutil.ReadFile("./conf.yaml")
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-
-	err = yaml.Unmarshal(yamlFile, c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-	return c
 }
 
 func AesEncrypt(orig string, key string) string {
@@ -57,7 +40,6 @@ func AesEncrypt(orig string, key string) string {
 	blockMode.CryptBlocks(cryted, origData)
 
 	return base64.StdEncoding.EncodeToString(cryted)
-
 }
 
 // 补码
